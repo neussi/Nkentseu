@@ -385,7 +385,7 @@ namespace nkentseu {
         template <typename T>
         struct NkIsUnion : NkBoolConstant<__is_union(T)> {};
         template <typename T>
-        struct NkIsFunction : NkBoolConstant<__is_function(T)> {};
+        struct NkIsFunction : NkBoolConstant<!NkIsConst_v<const T> && !NkIsReference_v<T> && !NkIsVoid_v<T>> {};
         #else
         template <typename T> struct NkIsEnum : NkFalseType {};
         template <typename T> struct NkIsClass : NkFalseType {};

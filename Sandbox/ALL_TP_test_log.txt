@@ -1,0 +1,39 @@
+[36m╔======================================================================╗
+[0m[36m║                                                                      ║
+[0m[36m║ [0m[35m     ██╗   ██╗███╗   ██╗██╗████████╗███████╗███████╗████████╗       [0m[36m ║
+[0m[36m║ [0m[35m     ██║   ██║████╗  ██║██║╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝       [0m[36m ║
+[0m[36m║ [0m[35m     ██║   ██║██╔██╗ ██║██║   ██║   █████╗  ███████╗   ██║          [0m[36m ║
+[0m[36m║ [0m[35m     ██║   ██║██║╚██╗██║██║   ██║   ██╔══╝  ╚════██║   ██║          [0m[36m ║
+[0m[36m║ [0m[35m     ╚██████╔╝██║ ╚████║██║   ██║   ███████╗███████║   ██║          [0m[36m ║
+[0m[36m║ [0m[35m      ╚═════╝ ╚═╝  ╚═══╝╚═╝   ╚═╝   ╚══════╝╚══════╝   ╚═╝          [0m[36m ║
+[0m[36m║                                                                      ║
+[0m[36m║[0m[34;1m                C++ Unit Testing Framework v1.0.0                [0m[36m     ║
+[0m[36m║[0m[37m              Fast, Reliable, and Developer-Friendly              [0m[36m    ║
+[0m[36m║                                                                      ║
+[0m[36m║[0m[32m  Number of tests: 2                                                  [0m[36m║
+[0m[36m║[0m[32m  Verbose mode: enabled                                               [0m[36m║
+[0m[36m║[0m[32m  Colors: enabled                                                     [0m[36m║
+[0m[36m║[0m[32m  Progress bar: disabled                                              [0m[36m║
+[0m[36m║                                                                      ║
+[0m[36m║[0m[90m               Session started: 2026-04-05 23:54:43               [0m[36m    ║
+[0m[36m║                                                                      ║
+[0m[36m╚======================================================================╝
+[0m
+[2026-04-05 23:54:43.596] [INF] [default] [: in ] -> [Sandbox Benchmark] color packing: 3.49796e+06 ns total (sink=12632064)
+[32;1m✓ [0mSandboxBenchmark_ColorPackingLoop             [[32mOK[0m]  1/1 assertions  (3ms)
+[32m  ✓ [0m1 assertion(s) réussie(s)[90m (moy: 3ms/assert)[0m
+[32;1m✓ [0mSandboxSmoke_RuntimeTypesAccessible           [[32mOK[0m]  3/3 assertions  (< 1ms)
+[32m  ✓ [0m3 assertion(s) réussie(s)[90m (moy: < 1ms/assert)[0m
+
+
+[36m┌────────────────────── RÉSULTATS DES TESTS ──────────────────────┐
+[0m[36m│ [0m[32;1mSUCCÈS[0m                                             [36m             │
+[0m[36m├─────────────────────────────────────────────────────────────────┤
+[0m[36m│ Tests :      [0m[32m2[0m réussis, 2 au total          [36m│
+[0m[36m│ Assertions : [0m[32m4[0m réussies, 4 au total         [36m│
+[0m[36m│ Taux succès : [0mTests: 100.0%, Assertions: 100.0%        [36m│
+[0m[36m│ Temps total : [0m3ms (1ms/test)     [36m│
+[0m[36m└──────────────────────────────────────────────────────────────┘
+[0m
+[32;1m✅ Tous les tests sont réussis !
+[0m

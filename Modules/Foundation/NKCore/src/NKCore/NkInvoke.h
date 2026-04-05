@@ -6,7 +6,17 @@
 #include "NkTraits.h"
 
 namespace nkentseu {
-    
+    namespace traits {
+        template<typename T> struct nk_is_member_function_pointer_impl : NkFalseType {};
+        template<typename T, typename U> struct nk_is_member_function_pointer_impl<T U::*> : NkIsFunction<T> {};
+        template<typename T> struct nk_is_member_object_pointer_impl : NkFalseType {};
+        template<typename T, typename U> struct nk_is_member_object_pointer_impl<T U::*> : NkBoolConstant<!NkIsFunction_v<T>> {};
+    }
+}
+#define __is_member_function_pointer(T) nkentseu::traits::nk_is_member_function_pointer_impl<T>::value
+#define __is_member_object_pointer(T) nkentseu::traits::nk_is_member_object_pointer_impl<T>::value
+
+namespace nkentseu {
 
         namespace detail {
 
@@ -28,19 +38,17 @@ namespace nkentseu {
         } // namespace detail
 
         template <typename F, typename... Args,
-                typename traits::NkEnableIf_t<
+                typename = traits::NkEnableIf_t<
                     !__is_member_function_pointer(traits::NkRemoveReference_t<F>) &&
-                    !__is_member_object_pointer(traits::NkRemoveReference_t<F>),
-                    int> = 0>
+                    !__is_member_object_pointer(traits::NkRemoveReference_t<F>)>>
         constexpr decltype(auto) NkInvoke(F&& function, Args&&... args) noexcept(
             noexcept(traits::NkForward<F>(function)(traits::NkForward<Args>(args)...))) {
             return traits::NkForward<F>(function)(traits::NkForward<Args>(args)...);
         }
 
         template <typename MemFn, typename Obj, typename... Args,
-                typename traits::NkEnableIf_t<
-                    __is_member_function_pointer(traits::NkRemoveReference_t<MemFn>),
-                    int> = 0>
+                typename = traits::NkEnableIf_t<
+                    __is_member_function_pointer(traits::NkRemoveReference_t<MemFn>)>>
         constexpr decltype(auto) NkInvoke(MemFn&& memberFunction, Obj&& object, Args&&... args) noexcept(
             noexcept((detail::NkInvokeObject(traits::NkForward<Obj>(object)).*memberFunction)(
                 traits::NkForward<Args>(args)...))) {
@@ -49,9 +57,8 @@ namespace nkentseu {
         }
 
         template <typename MemObj, typename Obj,
-                typename traits::NkEnableIf_t<
-                    __is_member_object_pointer(traits::NkRemoveReference_t<MemObj>),
-                    int> = 0>
+                typename = traits::NkEnableIf_t<
+                    __is_member_object_pointer(traits::NkRemoveReference_t<MemObj>)>>
         constexpr decltype(auto) NkInvoke(MemObj&& memberObject, Obj&& object) noexcept(
             noexcept(detail::NkInvokeObject(traits::NkForward<Obj>(object)).*memberObject)) {
             return detail::NkInvokeObject(traits::NkForward<Obj>(object)).*memberObject;
