@@ -1,1 +1,0 @@
-template <typename T> struct IsConst { static const bool value = false; }; template <typename T> struct IsConst<const T> { static const bool value = true; }; template <typename T> bool test() { return !IsConst<const T>::value; } int main() { return test<void()>() ? 0 : 1; }
