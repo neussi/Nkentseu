@@ -1,0 +1,180 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath, amsfonts, amssymb}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+
+\geometry{margin=2.5cm}
+
+\definecolor{codeblue}{RGB}{0,70,160}
+\definecolor{codegray}{RGB}{245,245,245}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{codegray},
+    keywordstyle=\bfseries\color{codeblue},
+    commentstyle=\itshape\color{gray},
+    showstringspaces=false,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{NEUSSI Patrice -- 24P820}
+\lhead{Realite Augmentee -- TP4}
+\rfoot{\thepage}
+
+\titleformat{\section}{\Large\bfseries\color{codeblue}}{}{0em}{\thesection\quad}
+\titleformat{\subsection}{\large\bfseries}{}{0em}{\thesubsection\quad}
+\hypersetup{colorlinks=true, linkcolor=codeblue, urlcolor=codeblue}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    {\huge\bfseries Rapport de Travaux Pratiques\par}
+    \vspace{1cm}
+    {\LARGE\bfseries\color{codeblue} TP4 -- Quaternions et Rotations\par}
+    \vspace{1.5cm}
+    \rule{\linewidth}{0.5pt}\vspace{0.5cm}
+    {\large Cours : Realite Augmentee FROM SCRATCH\par}
+    {\large Module 04 -- NkMath\par}
+    \vspace{0.5cm}\rule{\linewidth}{0.5pt}
+    \vspace{2cm}
+    {\large\textbf{Etudiant :} NEUSSI NJIETCHEU PATRICE EUGENE\par}
+    {\large\textbf{Matricule :} 24P820\par}
+    \vspace{2cm}
+    {\large Repository GitHub :\par}
+    \href{https://github.com/neussi/RA_TP4_Quaternions_et_Rotations}{https://github.com/neussi/RA\_TP4\_Quaternions\_et\_Rotations}
+    \vfill
+    {\large \today\par}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+Ce rapport presente le module \textbf{Quaternions et Rotations} du cours \textit{Realite
+Augmentee FROM SCRATCH}. Les quaternions evitent les problemes de gimbal lock des angles
+d'Euler et permettent une interpolation spherique fluide (SLERP) indispensable en AR.
+
+\section{Concepts Theoriques}
+
+\subsection{Definition d'un Quaternion}
+
+Un quaternion est un element de $\mathbb{H}$ :
+\[
+    q = w + xi + yj + zk \qquad \text{avec} \quad i^2=j^2=k^2=-1,\; ij=k
+\]
+
+Le quaternion unitaire $||q||=1$ decrit une rotation pure d'angle $\theta$ autour de l'axe $\hat{n}$ :
+\[
+    q = \cos\frac{\theta}{2} + \hat{n}\sin\frac{\theta}{2}
+\]
+
+\subsection{Operations Fondamentales}
+
+\begin{align}
+    q^* &= w - xi - yj - zk \quad \text{(conjugue)} \\
+    q^{-1} &= \frac{q^*}{||q||^2} \quad \text{(inverse, } q^{-1}=q^* \text{ si unitaire)} \\
+    q_1 q_2 &: \text{produit de Hamilton} \\
+    q p q^* &: \text{rotation du vecteur } p
+\end{align}
+
+\subsection{SLERP -- Interpolation Spherique}
+
+\[
+    \text{Slerp}(q_1, q_2, t) = q_1 \left(\frac{\sin((1-t)\Omega)}{\sin\Omega}\right)
+    + q_2 \left(\frac{\sin(t\Omega)}{\sin\Omega}\right)
+\]
+avec $\Omega = \arccos(q_1 \cdot q_2)$.
+
+\section{Realisation Technique}
+
+\begin{lstlisting}[language=C++, caption=Structure Quat]
+struct Quat {
+    double x, y, z, w;
+    Quat Conjugate() const { return {-x, -y, -z, w}; }
+    Quat Inverse()   const { return Conjugate(); }  // si unitaire
+    double Norm()    const { return std::sqrt(x*x+y*y+z*z+w*w); }
+    Quat Normalized()const { double n=Norm(); return {x/n,y/n,z/n,w/n}; }
+    static Quat Identity() { return {0,0,0,1}; }
+};
+\end{lstlisting}
+
+\begin{center}
+\begin{tabular}{ll}
+    \toprule
+    \textbf{Fonction} & \textbf{Description} \\
+    \midrule
+    \texttt{FromAxisAngle(n, theta)} & Creation depuis axe-angle \\
+    \texttt{Rotate(q, v)} & Rotation d'un vecteur par q \\
+    \texttt{ToMat3(q)} & Conversion quaternion vers Mat3d \\
+    \texttt{FromMat3(m)} & Conversion matrice vers quaternion \\
+    \texttt{Slerp(q1, q2, t)} & Interpolation spherique \\
+    \texttt{Lerp(q1, q2, t)} & Interpolation lineaire normalisee \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Tests Unitaires (Framework Nkentseu)}
+
+\subsection{Cas de test implementes}
+
+\begin{itemize}
+    \item \textbf{TP4\_ConjugateAndNorm} : conjugue et norme d'un quaternion
+    \item \textbf{TP4\_Multiplication} : produit de Hamilton
+    \item \textbf{TP4\_Rotation} : rotation de $(1,0,0)$ par $\pi/2$ autour de Y
+    \item \textbf{TP4\_Slerp} : interpolation entre $q_1$ et $q_2$ a $t=0$ et $t=1$
+\end{itemize}
+
+\subsection{Resultats d'execution}
+
+\begin{lstlisting}[caption=Sortie de jenga test -- TP4]
+Running test suite: TP4_Tests
+Session started: 2026-04-05 16:52:47
+Number of tests: 4
+
+[OK]  TP4_ConjugateAndNorm    2/2 assertions  (< 1ms)
+[OK]  TP4_Multiplication      1/1 assertions  (< 1ms)
+[OK]  TP4_Rotation            2/2 assertions  (< 1ms)
+[OK]  TP4_Slerp               2/2 assertions  (< 1ms)
+
+-------------------------------------------------------
+RESULTATS DES TESTS
+  SUCCES
+  Tests :       4 reussis, 4 au total
+  Assertions :  7 reussies, 7 au total
+  Taux succes : Tests: 100.0%, Assertions: 100.0%
+  Temps total : 3ms (< 1ms/test)
+
+Tous les tests sont reussis !
+\end{lstlisting}
+
+\section{Code Source}
+
+\begin{center}
+\href{https://github.com/neussi/RA_TP4_Quaternions_et_Rotations}{https://github.com/neussi/RA\_TP4\_Quaternions\_et\_Rotations}
+\end{center}
+
+\section{Conclusion}
+
+Les quaternions s'averent superieurs aux matrices pour les interpolations de rotations
+en animation AR. Le SLERP produit des interpolations a vitesse angulaire constante,
+evitant les artefacts visuels des interpolations lineaires.
+
+\end{document}

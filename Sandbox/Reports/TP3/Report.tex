@@ -1,0 +1,185 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath, amsfonts, amssymb}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+
+\geometry{margin=2.5cm}
+
+\definecolor{codeblue}{RGB}{0,70,160}
+\definecolor{codegray}{RGB}{245,245,245}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{codegray},
+    rulecolor=\color{gray!50},
+    keywordstyle=\bfseries\color{codeblue},
+    commentstyle=\itshape\color{gray},
+    showstringspaces=false,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{NEUSSI Patrice -- 24P820}
+\lhead{Realite Augmentee -- TP3}
+\rfoot{\thepage}
+
+\titleformat{\section}{\Large\bfseries\color{codeblue}}{}{0em}{\thesection\quad}
+\titleformat{\subsection}{\large\bfseries}{}{0em}{\thesubsection\quad}
+\hypersetup{colorlinks=true, linkcolor=codeblue, urlcolor=codeblue}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    {\huge\bfseries Rapport de Travaux Pratiques\par}
+    \vspace{1cm}
+    {\LARGE\bfseries\color{codeblue} TP3 -- Matrices 4x4 et Rasteriseur\par}
+    \vspace{1.5cm}
+    \rule{\linewidth}{0.5pt}\vspace{0.5cm}
+    {\large Cours : Realite Augmentee FROM SCRATCH\par}
+    {\large Module 03 -- NkMath\par}
+    \vspace{0.5cm}\rule{\linewidth}{0.5pt}
+    \vspace{2cm}
+    {\large\textbf{Etudiant :} NEUSSI NJIETCHEU PATRICE EUGENE\par}
+    {\large\textbf{Matricule :} 24P820\par}
+    \vspace{2cm}
+    {\large Repository GitHub :\par}
+    \href{https://github.com/neussi/RA_TP3_Matrices_et_Rendu}{https://github.com/neussi/RA\_TP3\_Matrices\_et\_Rendu}
+    \vfill
+    {\large \today\par}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+Ce rapport couvre le module \textbf{Matrices 4x4 et Rasteriseur Logiciel} du cours
+\textit{Realite Augmentee FROM SCRATCH}. Les matrices sont au coeur du pipeline graphique :
+transformations, vues, projections.
+
+\section{Concepts Theoriques}
+
+\subsection{Matrice 4x4 (Mat4d)}
+
+Une matrice $4\times4$ repr\'esente n'importe quelle transformation affine en homog\`ene.
+Le produit matriciel :
+\[
+    C_{ij} = \sum_{k=0}^{3} A_{ik} \cdot B_{kj}
+\]
+
+\subsection{Transformations Fondamentales}
+
+\begin{itemize}
+    \item \textbf{Translation} : $T(t_x, t_y, t_z)$ -- colonne 3 de l'identit\'e
+    \item \textbf{Rotation} autour d'un axe (formule de Rodrigues) :
+    \[
+        R = I\cos\theta + (1-\cos\theta)\hat{n}\hat{n}^T + \sin\theta[\hat{n}]_\times
+    \]
+    \item \textbf{Scale} : matrice diagonale $(s_x, s_y, s_z, 1)$
+    \item \textbf{LookAt} : matrice de vue
+    \item \textbf{Perspective} : projection perspective avec frustum
+\end{itemize}
+
+\subsection{Inverse d'une Matrice}
+
+Methode de Gauss-Jordan sur la matrice augmentee $[M | I]$ :
+\[
+    [M | I] \longrightarrow [I | M^{-1}]
+\]
+Si le pivot est nul, la matrice est singuliere et \texttt{Inverse} retourne \texttt{false}.
+
+\section{Realisation Technique}
+
+\begin{lstlisting}[language=C++, caption=Produit matriciel Mat4d]
+Mat4d operator*(const Mat4d& b) const {
+    Mat4d r;
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++) {
+            r(i,j) = 0;
+            for (int k = 0; k < 4; k++)
+                r(i,j) += (*this)(i,k) * b(k,j);
+        }
+    return r;
+}
+\end{lstlisting}
+
+\begin{center}
+\begin{tabular}{ll}
+    \toprule
+    \textbf{Fonction} & \textbf{Description} \\
+    \midrule
+    \texttt{Mat4d::Identity()} & Matrice identite \\
+    \texttt{Mat4d::RotateAxis(n, theta)} & Rotation autour de l'axe n \\
+    \texttt{Inverse(M, inv)} & Inverse par Gauss-Jordan \\
+    \texttt{LookAt(eye, target, up)} & Matrice de vue \\
+    \texttt{Perspective(fov, aspect, n, f)} & Projection perspective \\
+    \texttt{TRS(T, R, S)} & Matrice TRS composee \\
+    \texttt{DecomposeTRS(M, T, R, S)} & Decomposition \\
+    \texttt{ProjectToScreen(p, w, h)} & Projection ecran \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Tests Unitaires (Framework Nkentseu)}
+
+\subsection{Cas de test implementes}
+
+\begin{itemize}
+    \item \textbf{TP3\_IdentityMultiplication} : $M \times I = M$ pour 10 matrices aleatoires
+    \item \textbf{TP3\_Inverse} : $M \times M^{-1} = I$ pour 10 matrices aleatoires
+    \item \textbf{TP3\_SingularMatrix} : retourne false pour une matrice singuliere
+    \item \textbf{TP3\_RotationAxis} : rotation de $\pi/2$ autour de Y de $(1,0,0) \to (0,0,-1)$
+\end{itemize}
+
+\subsection{Resultats d'execution}
+
+\begin{lstlisting}[caption=Sortie de jenga test -- TP3]
+Running test suite: TP3_Tests
+Session started: 2026-04-05 16:52:46
+Number of tests: 4
+
+[OK]  TP3_IdentityMultiplication  10/10 assertions  (< 1ms)
+[OK]  TP3_Inverse                 10/10 assertions  (< 1ms)
+[OK]  TP3_SingularMatrix           1/1  assertions  (< 1ms)
+[OK]  TP3_RotationAxis             3/3  assertions  (< 1ms)
+
+-------------------------------------------------------
+RESULTATS DES TESTS
+  SUCCES
+  Tests :       4 reussis, 4 au total
+  Assertions :  24 reussies, 24 au total
+  Taux succes : Tests: 100.0%, Assertions: 100.0%
+  Temps total : 5ms (1ms/test)
+
+Tous les tests sont reussis !
+\end{lstlisting}
+
+\section{Code Source}
+
+\begin{center}
+\href{https://github.com/neussi/RA_TP3_Matrices_et_Rendu}{https://github.com/neussi/RA\_TP3\_Matrices\_et\_Rendu}
+\end{center}
+
+\section{Conclusion}
+
+Ce TP constitute l'epine dorsale du pipeline graphique. L'inverse par Gauss-Jordan et les
+matrices de transformation (LookAt, Perspective) permettent de construire un rasteriseur
+logiciel complet servant de base au TP suivant.
+
+\end{document}
